@@ -1,0 +1,5 @@
+==> cabal run slc -- examples/test_idents.sl
+cabal run slc -- examples/test_idents.sl
+
+
+#echo == run slc -- examples/test_lexer_min.sl
