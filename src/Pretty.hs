@@ -15,8 +15,12 @@ ppType TBoolType   = "bool"
 ppType TVoidType   = "void"
 
 ppExpr :: Expr -> String
-ppExpr (EVar x) = x
-ppExpr (EInt n) = show n
+ppExpr (EVar x)     = x
+ppExpr (EInt n)     = show n
+ppExpr (EAdd e1 e2) = "(" ++ ppExpr e1 ++ " + " ++ ppExpr e2 ++ ")"
+ppExpr (ESub e1 e2) = "(" ++ ppExpr e1 ++ " - " ++ ppExpr e2 ++ ")"
+ppExpr (EMul e1 e2) = "(" ++ ppExpr e1 ++ " * " ++ ppExpr e2 ++ ")"
+ppExpr (EDiv e1 e2) = "(" ++ ppExpr e1 ++ " / " ++ ppExpr e2 ++ ")"
 
 ppStmt :: Int -> Stmt -> String
 ppStmt n (SLet name ty expr) =

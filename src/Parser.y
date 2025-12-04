@@ -38,6 +38,9 @@ import AST
   intlit    { TIntLit $$ }
   eof       { TEOF }
 
+%left plus minus
+%left times div
+
 %%
 
 Program :: { Program }
@@ -67,10 +70,24 @@ Type
   | bool_kw                       { TBoolType }
   | void_kw                       { TVoidType }
 
+-- Expressoes com precedencia
 Expr :: { Expr }
 Expr
+  : Expr plus Term                { EAdd $1 $3 }
+  | Expr minus Term               { ESub $1 $3 }
+  | Term                          { $1 }
+
+Term :: { Expr }
+Term
+  : Term times Factor             { EMul $1 $3 }
+  | Term div Factor               { EDiv $1 $3 }
+  | Factor                        { $1 }
+
+Factor :: { Expr }
+Factor
   : ident                         { EVar $1 }
   | intlit                        { EInt $1 }
+  | lparen Expr rparen            { $2 }
 
 FieldDecls :: { [(String, Type)] }
 FieldDecls

@@ -431,4 +431,184 @@ Se quiser, no próximo passo posso:
   ou
 * começar um módulo `Pretty` simples, para você ver o programa em um formato mais legível do que o `Show` default do Haskell.
 
+########################
 
+
+Perfeito, isso significa que **lexer + parser + AST para `struct` e `let` estão redondos**. 🎯
+
+Você já tem:
+
+```text
+AST do programa:
+Program [SStruct "Ponto" [("x",TIntType),("y",TIntType)],SLet "origemX" TIntType (EInt 0),SLet "origemY" TIntType (EInt 0)]
+```
+
+Agora vamos dar o próximo passo que você comentou: **criar um “pretty printer”** para imprimir o programa de forma mais legível.
+
+---
+
+## 1. Criar o módulo `Pretty`
+
+Vamos criar `src/Pretty.hs` para transformar a AST em `String`.
+
+```bash
+cd /workspace/tp1-sl
+nano src/Pretty.hs
+```
+
+Conteúdo:
+
+```haskell
+module Pretty
+  ( ppProgram
+  ) where
+
+import AST
+
+indent :: Int -> String
+indent n = replicate (2 * n) ' '
+
+ppType :: Type -> String
+ppType TIntType    = "int"
+ppType TFloatType  = "float"
+ppType TStringType = "string"
+ppType TBoolType   = "bool"
+ppType TVoidType   = "void"
+
+ppExpr :: Expr -> String
+ppExpr (EVar x) = x
+ppExpr (EInt n) = show n
+
+ppStmt :: Int -> Stmt -> String
+ppStmt n (SLet name ty expr) =
+  indent n ++ "let " ++ name ++ " : " ++ ppType ty ++ " = " ++ ppExpr expr ++ ";"
+ppStmt n (SStruct name fields) =
+  indent n ++ "struct " ++ name ++ " {\n"
+  ++ unlines (map (ppField (n + 1)) fields)
+  ++ indent n ++ "}"
+
+ppField :: Int -> (String, Type) -> String
+ppField n (fname, fty) =
+  indent n ++ fname ++ " : " ++ ppType fty ++ ";"
+
+ppProgram :: Program -> String
+ppProgram (Program stmts) =
+  unlines (map (ppStmt 0) stmts)
+```
+
+Tudo ASCII, nenhum acento (para não irritar Happy/Alex por engano via encoding).
+
+Salve e saia.
+
+---
+
+## 2. Registrar o módulo no `.cabal`
+
+Abra o `tp1-sl.cabal`:
+
+```bash
+nano tp1-sl.cabal
+```
+
+Na seção do executável, inclua `Pretty` em `other-modules`:
+
+```cabal
+executable slc
+  main-is:             Main.hs
+  hs-source-dirs:      app, src
+  other-modules:
+      AST
+      Lexer
+      Parser
+      Pretty
+  build-depends:
+      base   >=4.14 && <5,
+      array
+  build-tool-depends:
+      alex:alex,
+      happy:happy
+  default-language:    Haskell2010
+```
+
+Salve e saia.
+
+---
+
+## 3. Ajustar o `Main` para usar o pretty printer
+
+Vamos trocar o `print prog` por `putStrLn (ppProgram prog)`.
+
+```bash
+nano app/Main.hs
+```
+
+Conteúdo:
+
+```haskell
+module Main where
+
+import System.Environment (getArgs)
+import Lexer  (scanTokens)
+import Parser (parseProgram)
+import Pretty (ppProgram)
+
+main :: IO ()
+main = do
+  args <- getArgs
+  src  <- case args of
+            [path] -> readFile path
+            _      -> getContents
+  let toks = scanTokens src
+      prog = parseProgram toks
+  putStrLn "Programa formatado:"
+  putStrLn (ppProgram prog)
+```
+
+Salve e saia.
+
+---
+
+## 4. Recompilar e testar
+
+```bash
+cd /workspace/tp1-sl
+cabal clean
+cabal build
+```
+
+Depois, rode com o arquivo `examples/test_struct.sl`:
+
+```bash
+cabal run slc -- examples/test_struct.sl
+```
+
+Saída esperada (algo assim):
+
+```text
+Programa formatado:
+struct Ponto {
+  x : int;
+  y : int;
+}
+let origemX : int = 0;
+let origemY : int = 0;
+```
+
+Agora você tem:
+
+* **Lexer** → tokens;
+* **Parser (Happy)** → AST (`Program`);
+* **Pretty** → código formatado a partir da AST.
+
+Ou seja, um mini “front-end” de compilador já funcionando de ponta a ponta.
+
+Se quiser continuar, os próximos upgrades naturais seriam:
+
+* enriquecer `Expr` com `+`, `-`, `*`, `/` (e ajustar o pretty para expressões);
+* começar a modelar funções (`func nome(...) { ... }`) na AST + parser.
+###################################
+
+ Atualizar a AST para suportar + - * / 
+
+
+git commit -m "Adicionado struct, Expressões aritmeticas e pretty printer"
