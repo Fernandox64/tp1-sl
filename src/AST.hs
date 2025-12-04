@@ -1,6 +1,6 @@
 module AST where
 
--- Tipos da linguagem
+-- Types
 data Type
   = TIntType
   | TFloatType
@@ -9,7 +9,7 @@ data Type
   | TVoidType
   deriving (Eq, Show)
 
--- Expressoes
+-- Expressions
 data Expr
   = EVar String
   | EInt Int
@@ -19,12 +19,15 @@ data Expr
   | EDiv Expr Expr
   deriving (Eq, Show)
 
--- Comandos / declaracoes
+-- Statements (used both at top-level and inside functions;
+-- the grammar will control where each one is allowed)
 data Stmt
-  = SLet String Type Expr             -- let x : int = 10;
-  | SStruct String [(String, Type)]   -- struct Ponto { x : int; y : int; }
+  = SLet String Type Expr
+  | SStruct String [(String, Type)]
+  | SFunc String [(String, Type)] Type [Stmt]
+  | SReturn Expr
   deriving (Eq, Show)
 
--- Programa = lista de comandos
+-- Program = list of top-level statements
 newtype Program = Program [Stmt]
   deriving (Eq, Show)

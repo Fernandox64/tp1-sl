@@ -13,7 +13,7 @@ main = do
             _      -> getContents
   let toks = scanTokens src
       prog = parseProgram toks
-  putStrLn "AST do programa:"
-  print prog
-  --putStrLn "Programa formatado:"
-  --putStrLn (ppProgram prog)
+--  putStrLn "AST do programa:"
+--  print prog
+  putStrLn "Programa formatado:"
+  putStrLn (ppProgram prog)

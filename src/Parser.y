@@ -45,22 +45,62 @@ import AST
 
 Program :: { Program }
 Program
-  : StmtList eof                  { Program $1 }
+  : TopLevelList eof              { Program $1 }
 
-StmtList :: { [Stmt] }
-StmtList
+TopLevelList :: { [Stmt] }
+TopLevelList
   :                               { [] }
-  | Stmt StmtList                 { $1 : $2 }
+  | TopLevel TopLevelList         { $1 : $2 }
 
-Stmt :: { Stmt }
-Stmt
-  -- let x : T = expr;
+TopLevel :: { Stmt }
+TopLevel
+  : LetDecl                       { $1 }
+  | StructDecl                    { $1 }
+  | FuncDef                       { $1 }
+
+-- Top-level let
+LetDecl :: { Stmt }
+LetDecl
   : let ident colon Type assign Expr semicolon
                                    { SLet $2 $4 $6 }
 
-  -- struct Name { fields }
-  | struct ident lbrace FieldDecls rbrace
+-- Top-level struct
+StructDecl :: { Stmt }
+StructDecl
+  : struct ident lbrace FieldDecls rbrace
                                    { SStruct $2 $4 }
+
+-- Top-level function: func name(params) : type { body }
+FuncDef :: { Stmt }
+FuncDef
+  : func ident lparen Params rparen colon Type lbrace FunStmtList rbrace
+                                   { SFunc $2 $4 $7 $9 }
+
+Params :: { [(String, Type)] }
+Params
+  :                               { [] }
+  | ParamList                     { $1 }
+
+ParamList :: { [(String, Type)] }
+ParamList
+  : Param                         { [$1] }
+  | Param comma ParamList         { $1 : $3 }
+
+Param :: { (String, Type) }
+Param
+  : ident colon Type              { ($1, $3) }
+
+-- Statements inside function bodies
+FunStmtList :: { [Stmt] }
+FunStmtList
+  :                               { [] }
+  | FunStmt FunStmtList           { $1 : $2 }
+
+FunStmt :: { Stmt }
+FunStmt
+  : let ident colon Type assign Expr semicolon
+                                   { SLet $2 $4 $6 }
+  | return Expr semicolon         { SReturn $2 }
 
 Type :: { Type }
 Type
@@ -70,7 +110,7 @@ Type
   | bool_kw                       { TBoolType }
   | void_kw                       { TVoidType }
 
--- Expressoes com precedencia
+-- Expressions with precedence
 Expr :: { Expr }
 Expr
   : Expr plus Term                { EAdd $1 $3 }

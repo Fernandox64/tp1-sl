@@ -10,9 +10,13 @@ cabal build
 #echo "==> cabal run slc -- examples/test_idents.sl
 #cabal run slc -- examples/test_idents.sl
 
+echo "==> cabal run slc -- examples/test_func.sl
+cabal run slc -- examples/test_func.sl
 
-echo "==> cabal run slc -- examples/test_expr.sl
-cabal run slc -- examples/test_expr.sl
+
+
+#echo "==> cabal run slc -- examples/test_expr.sl
+#cabal run slc -- examples/test_expr.sl
 
 
 #echo "==> cabal run slc -- examples/test_struct.sl

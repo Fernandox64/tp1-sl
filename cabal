@@ -1,5 +1,6 @@
-==> cabal run slc -- examples/test_expr.sl
-cabal run slc -- examples/test_expr.sl
+==> cabal run slc -- examples/test_func.sl
+cabal run slc -- examples/test_func.sl
 
 
-#echo == run slc -- examples/test_struct.sl
+
+#echo == run slc -- examples/test_expr.sl
