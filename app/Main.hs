@@ -1,8 +1,9 @@
 module Main where
 
 import System.Environment (getArgs)
-import Lexer (scanTokens)
+import Lexer  (scanTokens)
 import Parser (parseProgram)
+import Pretty (ppProgram)
 
 main :: IO ()
 main = do
@@ -10,7 +11,7 @@ main = do
   src  <- case args of
             [path] -> readFile path
             _      -> getContents
-  let toks   = scanTokens src
-      idents = parseProgram toks
-  putStrLn "Identificadores encontrados:"
-  mapM_ print idents
+  let toks = scanTokens src
+      prog = parseProgram toks
+  putStrLn "Programa formatado:"
+  putStrLn (ppProgram prog)
