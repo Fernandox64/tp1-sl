@@ -35,4 +35,9 @@ echo "    comando: cabal run slc -- \"$FILE\""
 cabal run slc -- "$FILE"
 
 echo
-echo "==> Todos os testes foram executados com o arquivo: $FILE"
+echo "==> Teste 5: parser fixo no exemplo test_func.sl"
+echo "    comando: cabal run slc -- --parser examples/test_func.sl"
+cabal run slc -- --parser examples/test_func.sl
+
+echo
+echo "==> Todos os testes foram executados com o arquivo padrão: $FILE"
