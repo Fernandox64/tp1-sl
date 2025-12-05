@@ -24,6 +24,13 @@ import Lexer
   bool_kw    { TBoolKw }
   void_kw    { TVoidKw }
 
+  true_kw    { TTrue }
+  false_kw   { TFalse }
+
+  andop      { TAnd }
+  orop       { TOr }
+  notop      { TNot }
+
   colon      { TColon }
   semicolon  { TSemicolon }
   lbrace     { TLBrace }
@@ -45,11 +52,15 @@ import Lexer
   eq         { TEqual }
   noteq      { TNotEqual }
 
-  ident      { TIdent $$ }
   int_lit    { TIntLit $$ }
+  float_lit  { TFloatLit $$ }
+  string_lit { TStringLit $$ }
+  ident      { TIdent $$ }
 
   eof        { TEOF }
 
+%left orop
+%left andop
 %nonassoc less lesseq greater greatereq eq noteq
 %left plus minus
 %left times div
@@ -146,16 +157,27 @@ Type
 
 Expr :: { Expr }
 Expr
-  : Expr less Expr                { ELt  $1 $3 }
+  -- logical
+  : Expr orop Expr                { EOr  $1 $3 }
+  | Expr andop Expr               { EAnd $1 $3 }
+
+  -- relational
+  | Expr less Expr                { ELt  $1 $3 }
   | Expr lesseq Expr              { ELe  $1 $3 }
   | Expr greater Expr             { EGt  $1 $3 }
   | Expr greatereq Expr           { EGe  $1 $3 }
   | Expr eq Expr                  { EEq  $1 $3 }
   | Expr noteq Expr               { ENe  $1 $3 }
+
+  -- arithmetic
   | Expr plus Expr                { EAdd $1 $3 }
   | Expr minus Expr               { ESub $1 $3 }
   | Expr times Expr               { EMul $1 $3 }
   | Expr div Expr                 { EDiv $1 $3 }
+
+  -- unary not
+  | notop Expr                    { ENot $2 }
+
   | Primary                       { $1 }
 
 Primary :: { Expr }
@@ -164,6 +186,10 @@ Primary
                                   { ECall $1 $3 }
   | ident                         { EVar $1 }
   | int_lit                       { EInt $1 }
+  | float_lit                     { EFloat $1 }
+  | string_lit                    { EString $1 }
+  | true_kw                       { EBool True }
+  | false_kw                      { EBool False }
   | lparen Expr rparen            { $2 }
 
 ArgListOpt :: { [Expr] }

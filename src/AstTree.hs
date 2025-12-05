@@ -54,6 +54,9 @@ paramToTree (pname, pty) =
 exprToTree :: Expr -> Tree String
 exprToTree (EVar x)      = Node ("Var " ++ x) []
 exprToTree (EInt n)      = Node ("Int " ++ show n) []
+exprToTree (EFloat x)    = Node ("Float " ++ show x) []
+exprToTree (EBool b)     = Node ("Bool " ++ show b) []
+exprToTree (EString s)   = Node ("String " ++ show s) []
 
 exprToTree (EAdd e1 e2)  = Node "Add" [exprToTree e1, exprToTree e2]
 exprToTree (ESub e1 e2)  = Node "Sub" [exprToTree e1, exprToTree e2]
@@ -67,8 +70,13 @@ exprToTree (EGe e1 e2)   = Node "Ge" [exprToTree e1, exprToTree e2]
 exprToTree (EEq e1 e2)   = Node "Eq" [exprToTree e1, exprToTree e2]
 exprToTree (ENe e1 e2)   = Node "Ne" [exprToTree e1, exprToTree e2]
 
+exprToTree (EAnd e1 e2)  = Node "And" [exprToTree e1, exprToTree e2]
+exprToTree (EOr  e1 e2)  = Node "Or"  [exprToTree e1, exprToTree e2]
+exprToTree (ENot e)      = Node "Not" [exprToTree e]
+
 exprToTree (ECall f args) =
   Node ("Call " ++ f) (map exprToTree args)
+
 
 showType :: Type -> String
 showType TIntType    = "int"

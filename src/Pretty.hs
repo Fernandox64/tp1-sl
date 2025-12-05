@@ -18,6 +18,10 @@ ppType TVoidType   = "void"
 ppExpr :: Expr -> String
 ppExpr (EVar x)       = x
 ppExpr (EInt n)       = show n
+ppExpr (EFloat x)     = show x
+ppExpr (EBool True)   = "true"
+ppExpr (EBool False)  = "false"
+ppExpr (EString s)    = show s  -- show already adds quotes
 
 -- arithmetic
 ppExpr (EAdd e1 e2) = "(" ++ ppExpr e1 ++ " + "  ++ ppExpr e2 ++ ")"
@@ -33,8 +37,14 @@ ppExpr (EGe  e1 e2) = "(" ++ ppExpr e1 ++ " >= " ++ ppExpr e2 ++ ")"
 ppExpr (EEq  e1 e2) = "(" ++ ppExpr e1 ++ " == " ++ ppExpr e2 ++ ")"
 ppExpr (ENe  e1 e2) = "(" ++ ppExpr e1 ++ " != " ++ ppExpr e2 ++ ")"
 
+-- logical
+ppExpr (EAnd e1 e2) = "(" ++ ppExpr e1 ++ " && " ++ ppExpr e2 ++ ")"
+ppExpr (EOr  e1 e2) = "(" ++ ppExpr e1 ++ " || " ++ ppExpr e2 ++ ")"
+ppExpr (ENot e)     = "(!" ++ ppExpr e ++ ")"
+
 ppExpr (ECall f args) =
   f ++ "(" ++ intercalate ", " (map ppExpr args) ++ ")"
+
 
 ppStmt :: Int -> Stmt -> String
 ppStmt n (SLet name ty expr) =

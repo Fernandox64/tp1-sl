@@ -13,6 +13,9 @@ data Type
 data Expr
   = EVar String
   | EInt Int
+  | EFloat Double
+  | EBool Bool
+  | EString String
   -- arithmetic
   | EAdd Expr Expr
   | ESub Expr Expr
@@ -25,9 +28,14 @@ data Expr
   | EGe  Expr Expr
   | EEq  Expr Expr
   | ENe  Expr Expr
+  -- logical
+  | EAnd Expr Expr
+  | EOr  Expr Expr
+  | ENot Expr
   -- function call
   | ECall String [Expr]
   deriving (Eq, Show)
+
 
 -- Statements
 data Stmt
