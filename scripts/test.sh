@@ -74,6 +74,15 @@ echo "==> Teste 12: parser fixo no exemplo test_map.sl"
 echo "    comando: cabal run slc -- --parser examples/test_map.sl"
 cabal run slc -- --parser examples/test_map.sl
 
+echo
+echo "==> Teste 11: parser fixo no exemplo test_id.sl"
+echo "    comando: cabal run slc -- --parser examples/test_id.sl"
+cabal run slc -- --parser examples/test_id.sl
+
+echo
+echo "==> Teste 12: parser fixo no exemplo test_map.sl"
+echo "    comando: cabal run slc -- --parser examples/test_map.sl"
+cabal run slc -- --parser examples/test_map2.sl
 
 echo
 echo "==> Todos os testes foram executados com o arquivo padrão: $FILE"

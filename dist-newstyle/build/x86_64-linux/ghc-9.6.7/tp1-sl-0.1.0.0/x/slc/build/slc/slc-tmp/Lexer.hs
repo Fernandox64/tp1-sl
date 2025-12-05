@@ -1122,7 +1122,7 @@ alexRightContext IBOX(sc) user__ _ _ input__ =
         -- match when checking the right context, just
         -- the first match will do.
 #endif
-{-# LINE 85 "src/Lexer.x" #-}
+{-# LINE 87 "src/Lexer.x" #-}
 data Token
   = TStruct | TLet | TFunc | TReturn
   | TIf | TElse | TWhile | TFor

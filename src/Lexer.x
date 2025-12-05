@@ -39,13 +39,15 @@ tokens :-
   "||"                            { \_ -> TOr }
   "!"                             { \_ -> TNot }
 
-  -- operadores relacionais / igualdade / seta
+  -- operadores relacionais (multicaractere primeiro)
   "=="                            { \_ -> TEqual }
   "!="                            { \_ -> TNotEqual }
   "<="                            { \_ -> TLessEq }
   ">="                            { \_ -> TGreaterEq }
   "<"                             { \_ -> TLess }
   ">"                             { \_ -> TGreater }
+
+  -- operador de tipo (seta)
   "->"                            { \_ -> TArrow }
 
   -- pontuação
@@ -114,3 +116,4 @@ stripQuotes s =
 scanTokens :: String -> [Token]
 scanTokens s = alexScanTokens s ++ [TEOF]
 }
+  
