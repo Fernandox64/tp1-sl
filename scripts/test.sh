@@ -45,4 +45,9 @@ echo "    comando: cabal run slc -- --parser examples/test_factorial.sl"
 cabal run slc -- --parser examples/test_factorial.sl
 
 echo
+echo "==> Teste 7: parser fixo no exemplo test_while.sl"
+echo "    comando: cabal run slc -- --parser examples/test_while.sl"
+cabal run slc -- --parser examples/test_while.sl
+
+echo
 echo "==> Todos os testes foram executados com o arquivo padrão: $FILE"

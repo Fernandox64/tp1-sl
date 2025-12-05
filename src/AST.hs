@@ -29,17 +29,17 @@ data Expr
   | ECall String [Expr]
   deriving (Eq, Show)
 
--- Statements (used both at top-level and inside functions)
+-- Statements
 data Stmt
   = SLet String Type Expr
   | SStruct String [(String, Type)]
   | SFunc String [(String, Type)] Type [Stmt]
   | SReturn Expr
-  -- new:
-  | SIf Expr [Stmt] [Stmt]   -- if cond thenStmts elseStmts
-  | SExpr Expr               -- expression as a statement (e.g. print(x);)
+  | SIf Expr [Stmt] [Stmt]
+  | SWhile Expr [Stmt]          -- novo: while (expr) { body }
+  | SAssign String Expr         -- novo: x = expr;
+  | SExpr Expr                  -- expressão como comando
   deriving (Eq, Show)
 
--- Program = list of top-level statements
 newtype Program = Program [Stmt]
   deriving (Eq, Show)

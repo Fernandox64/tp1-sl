@@ -5,7 +5,6 @@ module AstTree
 import AST
 import Data.Tree (Tree(..))
 
--- Program -> Tree
 progToTree :: Program -> Tree String
 progToTree (Program stmts) =
   Node "Program" (map stmtToTree stmts)
@@ -32,6 +31,15 @@ stmtToTree (SIf cond th el) =
     , Node "Else" (map stmtToTree el)
     ]
 
+stmtToTree (SWhile cond body) =
+  Node "While"
+    [ Node "Cond" [exprToTree cond]
+    , Node "Body" (map stmtToTree body)
+    ]
+
+stmtToTree (SAssign name expr) =
+  Node ("Assign " ++ name) [exprToTree expr]
+
 stmtToTree (SExpr e) =
   Node "Expr" [exprToTree e]
 
@@ -44,32 +52,20 @@ paramToTree (pname, pty) =
   Node ("Param " ++ pname ++ " : " ++ showType pty) []
 
 exprToTree :: Expr -> Tree String
-exprToTree (EVar x) =
-  Node ("Var " ++ x) []
-exprToTree (EInt n) =
-  Node ("Int " ++ show n) []
+exprToTree (EVar x)      = Node ("Var " ++ x) []
+exprToTree (EInt n)      = Node ("Int " ++ show n) []
 
-exprToTree (EAdd e1 e2) =
-  Node "Add" [exprToTree e1, exprToTree e2]
-exprToTree (ESub e1 e2) =
-  Node "Sub" [exprToTree e1, exprToTree e2]
-exprToTree (EMul e1 e2) =
-  Node "Mul" [exprToTree e1, exprToTree e2]
-exprToTree (EDiv e1 e2) =
-  Node "Div" [exprToTree e1, exprToTree e2]
+exprToTree (EAdd e1 e2)  = Node "Add" [exprToTree e1, exprToTree e2]
+exprToTree (ESub e1 e2)  = Node "Sub" [exprToTree e1, exprToTree e2]
+exprToTree (EMul e1 e2)  = Node "Mul" [exprToTree e1, exprToTree e2]
+exprToTree (EDiv e1 e2)  = Node "Div" [exprToTree e1, exprToTree e2]
 
-exprToTree (ELt e1 e2) =
-  Node "Lt" [exprToTree e1, exprToTree e2]
-exprToTree (ELe e1 e2) =
-  Node "Le" [exprToTree e1, exprToTree e2]
-exprToTree (EGt e1 e2) =
-  Node "Gt" [exprToTree e1, exprToTree e2]
-exprToTree (EGe e1 e2) =
-  Node "Ge" [exprToTree e1, exprToTree e2]
-exprToTree (EEq e1 e2) =
-  Node "Eq" [exprToTree e1, exprToTree e2]
-exprToTree (ENe e1 e2) =
-  Node "Ne" [exprToTree e1, exprToTree e2]
+exprToTree (ELt e1 e2)   = Node "Lt" [exprToTree e1, exprToTree e2]
+exprToTree (ELe e1 e2)   = Node "Le" [exprToTree e1, exprToTree e2]
+exprToTree (EGt e1 e2)   = Node "Gt" [exprToTree e1, exprToTree e2]
+exprToTree (EGe e1 e2)   = Node "Ge" [exprToTree e1, exprToTree e2]
+exprToTree (EEq e1 e2)   = Node "Eq" [exprToTree e1, exprToTree e2]
+exprToTree (ENe e1 e2)   = Node "Ne" [exprToTree e1, exprToTree e2]
 
 exprToTree (ECall f args) =
   Node ("Call " ++ f) (map exprToTree args)

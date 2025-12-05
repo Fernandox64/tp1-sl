@@ -33,7 +33,6 @@ ppExpr (EGe  e1 e2) = "(" ++ ppExpr e1 ++ " >= " ++ ppExpr e2 ++ ")"
 ppExpr (EEq  e1 e2) = "(" ++ ppExpr e1 ++ " == " ++ ppExpr e2 ++ ")"
 ppExpr (ENe  e1 e2) = "(" ++ ppExpr e1 ++ " != " ++ ppExpr e2 ++ ")"
 
--- function call
 ppExpr (ECall f args) =
   f ++ "(" ++ intercalate ", " (map ppExpr args) ++ ")"
 
@@ -65,6 +64,14 @@ ppStmt n (SIf cond th el) =
       else " else {\n"
         ++ unlines (map (ppStmt (n + 1)) el)
         ++ indent n ++ "}")
+
+ppStmt n (SWhile cond body) =
+  indent n ++ "while (" ++ ppExpr cond ++ ") {\n"
+  ++ unlines (map (ppStmt (n + 1)) body)
+  ++ indent n ++ "}"
+
+ppStmt n (SAssign name expr) =
+  indent n ++ name ++ " = " ++ ppExpr expr ++ ";"
 
 ppStmt n (SExpr e) =
   indent n ++ ppExpr e ++ ";"

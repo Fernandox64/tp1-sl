@@ -16,6 +16,7 @@ import Lexer
   return     { TReturn }
   if_kw      { TIf }
   else_kw    { TElse }
+  while_kw   { TWhile }
 
   int_kw     { TIntKw }
   float_kw   { TFloatKw }
@@ -70,7 +71,6 @@ TopLevel
   | StructDecl                    { $1 }
   | FuncDef                       { $1 }
 
--- top-level let
 LetDecl :: { Stmt }
 LetDecl
   : let ident colon Type assign Expr semicolon
@@ -117,17 +117,19 @@ StmtList
 
 Stmt :: { Stmt }
 Stmt
-  -- local let
   : let ident colon Type assign Expr semicolon
                                   { SLet $2 $4 $6 }
   | return Expr semicolon         { SReturn $2 }
   | if_kw lparen Expr rparen Block ElsePart
                                   { SIf $3 $5 $6 }
+  | while_kw lparen Expr rparen Block
+                                  { SWhile $3 $5 }
+  | ident assign Expr semicolon   { SAssign $1 $3 }
   | Expr semicolon                { SExpr $1 }
 
 ElsePart :: { [Stmt] }
 ElsePart
-  :                               { [] }          -- optional else
+  :                               { [] }
   | else_kw Block                 { $2 }
 
 Block :: { [Stmt] }
@@ -144,14 +146,12 @@ Type
 
 Expr :: { Expr }
 Expr
-  -- relational
   : Expr less Expr                { ELt  $1 $3 }
   | Expr lesseq Expr              { ELe  $1 $3 }
   | Expr greater Expr             { EGt  $1 $3 }
   | Expr greatereq Expr           { EGe  $1 $3 }
   | Expr eq Expr                  { EEq  $1 $3 }
   | Expr noteq Expr               { ENe  $1 $3 }
-  -- arithmetic
   | Expr plus Expr                { EAdd $1 $3 }
   | Expr minus Expr               { ESub $1 $3 }
   | Expr times Expr               { EMul $1 $3 }

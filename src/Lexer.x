@@ -10,7 +10,7 @@ $alnum = [A-Za-z0-9_]
 
 tokens :-
 
-  -- skip whitespace
+  -- whitespace
   $white+                         ;
 
   -- keywords
@@ -20,15 +20,16 @@ tokens :-
   "return"                        { \_ -> TReturn }
   "if"                            { \_ -> TIf }
   "else"                          { \_ -> TElse }
+  "while"                         { \_ -> TWhile }
 
-  -- types
+  -- type keywords
   "int"                           { \_ -> TIntKw }
   "float"                         { \_ -> TFloatKw }
   "string"                        { \_ -> TStringKw }
   "bool"                          { \_ -> TBoolKw }
   "void"                          { \_ -> TVoidKw }
 
-  -- relational (multi-char first)
+  -- relational operators (multi-char first)
   "=="                            { \_ -> TEqual }
   "!="                            { \_ -> TNotEqual }
   "<="                            { \_ -> TLessEq }
@@ -59,13 +60,13 @@ tokens :-
   -- identifiers
   $alpha $alnum*                  { \s -> TIdent s }
 
-  -- any other (unexpected) character
+  -- any other unexpected character
   .                               { \s -> TUnknown s }
 
 {
 data Token
   = TStruct | TLet | TFunc | TReturn
-  | TIf | TElse
+  | TIf | TElse | TWhile
   | TIntKw | TFloatKw | TStringKw | TBoolKw | TVoidKw
   | TColon | TSemicolon | TLBrace | TRBrace | TLParen | TRParen | TComma | TAssign
   | TPlus | TMinus | TTimes | TDiv
