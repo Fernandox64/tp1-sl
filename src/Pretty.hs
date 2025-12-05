@@ -19,6 +19,8 @@ ppType TBoolType      = "bool"
 ppType TVoidType      = "void"
 ppType (TArray ty)    = ppType ty ++ "[]"
 ppType (TCustom name) = name
+ppType (TFun args ret) =
+  "(" ++ intercalate ", " (map ppType args) ++ ") -> " ++ ppType ret
 
 ppExpr :: Expr -> String
 ppExpr (EVar x)       = x
@@ -78,11 +80,16 @@ ppStmt n (SStruct name fields) =
   ++ unlines (map (ppField (n + 1)) fields)
   ++ indent n ++ "}"
 
-ppStmt n (SFunc name params retTy body) =
-  indent n
-  ++ "func " ++ name ++ "(" ++ ppParams params ++ ") : " ++ ppType retTy ++ " {\n"
-  ++ unlines (map (ppStmt (n + 1)) body)
-  ++ indent n ++ "}"
+ppStmt n (SFunc name gens params retTy body) =
+  let forallPrefix =
+        case gens of
+          [] -> ""
+          vs -> "forall " ++ unwords vs ++ " . "
+  in indent n
+     ++ forallPrefix
+     ++ "func " ++ name ++ "(" ++ ppParams params ++ ") : " ++ ppType retTy ++ " {\n"
+     ++ unlines (map (ppStmt (n + 1)) body)
+     ++ indent n ++ "}"
 
 ppStmt n (SReturn e) =
   indent n ++ "return " ++ ppExpr e ++ ";"

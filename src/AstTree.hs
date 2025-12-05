@@ -4,6 +4,7 @@ module AstTree
 
 import AST
 import Data.Tree (Tree(..))
+import Data.List (intercalate)
 
 progToTree :: Program -> Tree String
 progToTree (Program stmts) =
@@ -17,9 +18,13 @@ stmtToTree (SLet name ty expr) =
   Node ("Let " ++ name ++ " : " ++ showType ty)
        [exprToTree expr]
 
-stmtToTree (SFunc name params retTy body) =
-  Node ("Func " ++ name ++ " : " ++ showType retTy)
-       (map paramToTree params ++ map stmtToTree body)
+stmtToTree (SFunc name gens params retTy body) =
+  let gensStr =
+        case gens of
+          [] -> ""
+          _  -> " forall " ++ unwords gens
+      header = "Func " ++ name ++ gensStr ++ " : " ++ showType retTy
+  in Node header (map paramToTree params ++ map stmtToTree body)
 
 stmtToTree (SReturn e) =
   Node "Return" [exprToTree e]
@@ -124,3 +129,5 @@ showType TBoolType      = "bool"
 showType TVoidType      = "void"
 showType (TArray t)     = showType t ++ "[]"
 showType (TCustom name) = name
+showType (TFun args ret) =
+  "(" ++ intercalate ", " (map showType args) ++ ") -> " ++ showType ret

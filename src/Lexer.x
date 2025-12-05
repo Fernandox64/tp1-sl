@@ -25,6 +25,7 @@ tokens :-
   "true"                          { \_ -> TTrue }
   "false"                         { \_ -> TFalse }
   "new"                           { \_ -> TNew }
+  "forall"                        { \_ -> TForall }
 
   -- palavras-chave de tipo
   "int"                           { \_ -> TIntKw }
@@ -38,13 +39,14 @@ tokens :-
   "||"                            { \_ -> TOr }
   "!"                             { \_ -> TNot }
 
-  -- operadores relacionais (multicaractere primeiro)
+  -- operadores relacionais / igualdade / seta
   "=="                            { \_ -> TEqual }
   "!="                            { \_ -> TNotEqual }
   "<="                            { \_ -> TLessEq }
   ">="                            { \_ -> TGreaterEq }
   "<"                             { \_ -> TLess }
   ">"                             { \_ -> TGreater }
+  "->"                            { \_ -> TArrow }
 
   -- pontuação
   ":"                             { \_ -> TColon }
@@ -92,7 +94,9 @@ data Token
   | TPlus | TMinus | TTimes | TDiv
   | TLess | TLessEq | TGreater | TGreaterEq | TEqual | TNotEqual
   | TAnd | TOr | TNot
-  | TNew                    -- <<< ADICIONE ESTA LINHA >>>
+  | TNew
+  | TForall
+  | TArrow
   | TIntLit Int
   | TFloatLit Double
   | TStringLit String
@@ -100,7 +104,6 @@ data Token
   | TUnknown String
   | TEOF
   deriving (Eq, Show)
-
 
 stripQuotes :: String -> String
 stripQuotes s =

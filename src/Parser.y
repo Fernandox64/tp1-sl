@@ -62,6 +62,8 @@ import Lexer
   ident      { TIdent $$ }
 
   new_kw     { TNew }
+  forall_kw  { TForall }
+  arrow      { TArrow }
 
   eof        { TEOF }
 
@@ -107,11 +109,20 @@ FieldDecl :: { (String, Type) }
 FieldDecl
   : ident colon Type semicolon    { ($1, $3) }
 
+-- Funcoes, com e sem forall
 FuncDef :: { Stmt }
 FuncDef
   : func ident lparen ParamListOpt rparen colon Type
     lbrace StmtList rbrace
-                                  { SFunc $2 $4 $7 $9 }
+                                  { SFunc $2 [] $4 $7 $9 }
+  | forall_kw TypeVarList dot func ident lparen ParamListOpt rparen colon Type
+    lbrace StmtList rbrace
+                                  { SFunc $5 $2 $7 $10 $12 }
+
+TypeVarList :: { [String] }
+TypeVarList
+  : ident                         { [$1] }
+  | ident TypeVarList             { $1 : $2 }
 
 ParamListOpt :: { [(String, Type)] }
 ParamListOpt
@@ -178,13 +189,22 @@ Block :: { [Stmt] }
 Block
   : lbrace StmtList rbrace        { $2 }
 
--- Types with array forms: T, T[], T[5]
+-- Types: base, funcao
 Type :: { Type }
 Type
-  : BaseType                      { $1 }
-  | BaseType lbracket rbracket    { TArray $1 }
-  | BaseType lbracket int_lit rbracket
-                                  { TArray $1 }
+  : SimpleType                           { $1 }
+  | lparen TypeList rparen arrow Type    { TFun $2 $5 }
+
+SimpleType :: { Type }
+SimpleType
+  : BaseType                             { $1 }
+  | BaseType lbracket rbracket           { TArray $1 }
+  | BaseType lbracket int_lit rbracket   { TArray $1 }
+
+TypeList :: { [Type] }
+TypeList
+  : Type                                 { [$1] }
+  | Type comma TypeList                  { $1 : $3 }
 
 BaseType :: { Type }
 BaseType
@@ -195,7 +215,7 @@ BaseType
   | void_kw                       { TVoidType }
   | ident                         { TCustom $1 }
 
--- Expressions (with postfix array index / campo)
+-- Expressions (com postfix para [] e .)
 Expr :: { Expr }
 Expr
   : Expr orop Expr                { EOr  $1 $3 }

@@ -8,7 +8,8 @@ data Type
   | TBoolType
   | TVoidType
   | TArray Type          -- int[], float[], Person[]
-  | TCustom String       -- tipos definidos pelo usuário, ex.: Person
+  | TCustom String       -- tipos definidos pelo usuário ou variáveis de tipo (a, b, Person)
+  | TFun [Type] Type     -- (T1, T2, ...) -> T
   deriving (Eq, Show)
 
 -- Expressions
@@ -37,7 +38,7 @@ data Expr
   -- arrays
   | EIndex Expr Expr        -- v[i]
   | EArrayLit [Expr]        -- [1,2,3]
-  | ENewArray Type Expr     -- new int[size]
+  | ENewArray Type Expr     -- new T[expr]
   -- struct / campos
   | EField Expr String      -- expr.campo (inclui v.size)
   | EStructLit String [Expr]-- Person{ "Alice", 25, 1.70 }
@@ -59,7 +60,9 @@ data ForStep
 data Stmt
   = SLet String Type Expr
   | SStruct String [(String, Type)]
-  | SFunc String [(String, Type)] Type [Stmt]
+  -- SFunc com lista de variáveis de tipo (generics)
+  -- SFunc nome generics parâmetros tipoRet corpo
+  | SFunc String [String] [(String, Type)] Type [Stmt]
   | SReturn Expr
   | SIf Expr [Stmt] [Stmt]
   | SWhile Expr [Stmt]
