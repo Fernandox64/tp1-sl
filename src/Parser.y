@@ -38,6 +38,9 @@ import Lexer
   rbrace     { TRBrace }
   lparen     { TLParen }
   rparen     { TRParen }
+  lbracket   { TLBracket }
+  rbracket   { TRBracket }
+  dot        { TDot }
   comma      { TComma }
   assign     { TAssign }
 
@@ -57,6 +60,8 @@ import Lexer
   float_lit  { TFloatLit $$ }
   string_lit { TStringLit $$ }
   ident      { TIdent $$ }
+
+  new_kw     { TNew }
 
   eof        { TEOF }
 
@@ -138,8 +143,11 @@ Stmt
                                   { SWhile $3 $5 }
   | for_kw lparen ForInitOpt semicolon ForCondOpt semicolon ForStepOpt rparen Block
                                   { SFor $3 $5 $7 $9 }
+  | ident lbracket Expr rbracket assign Expr semicolon
+                                  { SAssignIndex $1 $3 $6 }
   | ident assign Expr semicolon   { SAssign $1 $3 }
   | Expr semicolon                { SExpr $1 }
+
 
 ForInitOpt :: { Maybe ForInit }
 ForInitOpt
@@ -171,14 +179,23 @@ Block :: { [Stmt] }
 Block
   : lbrace StmtList rbrace        { $2 }
 
+-- Types with array forms: T, T[], T[5]
 Type :: { Type }
 Type
+  : BaseType                      { $1 }
+  | BaseType lbracket rbracket    { TArray $1 }
+  | BaseType lbracket int_lit rbracket
+                                  { TArray $1 }
+
+BaseType :: { Type }
+BaseType
   : int_kw                        { TIntType }
   | float_kw                      { TFloatType }
   | string_kw                     { TStringType }
   | bool_kw                       { TBoolType }
   | void_kw                       { TVoidType }
 
+-- Expressions (with postfix array index)
 Expr :: { Expr }
 Expr
   : Expr orop Expr                { EOr  $1 $3 }
@@ -194,7 +211,14 @@ Expr
   | Expr times Expr               { EMul $1 $3 }
   | Expr div Expr                 { EDiv $1 $3 }
   | notop Expr                    { ENot $2 }
-  | Primary                       { $1 }
+  | Postfix                       { $1 }
+
+Postfix :: { Expr }
+Postfix
+  : Primary                       { $1 }
+  | Postfix lbracket Expr rbracket
+                                  { EIndex $1 $3 }
+  -- futuro: Postfix dot ident para acesso a campos/size
 
 Primary :: { Expr }
 Primary
@@ -206,7 +230,11 @@ Primary
   | string_lit                    { EString $1 }
   | true_kw                       { EBool True }
   | false_kw                      { EBool False }
+  | new_kw BaseType lbracket Expr rbracket
+                                  { ENewArray $2 $4 }
+  | lbracket ArgListOpt rbracket  { EArrayLit $2 }
   | lparen Expr rparen            { $2 }
+
 
 ArgListOpt :: { [Expr] }
 ArgListOpt

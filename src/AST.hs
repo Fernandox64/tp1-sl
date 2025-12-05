@@ -7,6 +7,7 @@ data Type
   | TStringType
   | TBoolType
   | TVoidType
+  | TArray Type          -- int[], float[], etc.
   deriving (Eq, Show)
 
 -- Expressions
@@ -32,6 +33,10 @@ data Expr
   | EAnd Expr Expr
   | EOr  Expr Expr
   | ENot Expr
+  -- arrays
+  | EIndex Expr Expr        -- v[i]
+  | EArrayLit [Expr]        -- [1,2,3]
+  | ENewArray Type Expr     -- new int[size]
   -- function call
   | ECall String [Expr]
   deriving (Eq, Show)
@@ -54,10 +59,12 @@ data Stmt
   | SReturn Expr
   | SIf Expr [Stmt] [Stmt]
   | SWhile Expr [Stmt]
-  | SAssign String Expr
   | SFor (Maybe ForInit) (Maybe Expr) (Maybe ForStep) [Stmt]
+  | SAssign String Expr
+  | SAssignIndex String Expr Expr   -- result[i] = expr;
   | SExpr Expr
   deriving (Eq, Show)
+
 
 -- Program
 newtype Program = Program [Stmt]

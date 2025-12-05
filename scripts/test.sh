@@ -60,4 +60,9 @@ echo "    comando: cabal run slc -- --parser examples/test_for.sl"
 cabal run slc -- --parser examples/test_for.sl
 
 echo
+echo "==> Teste 10: parser fixo no exemplo test_reverse.sl"
+echo "    comando: cabal run slc -- --parser examples/test_reverse.sl"
+cabal run slc -- --parser examples/test_reverse.sl
+
+echo
 echo "==> Todos os testes foram executados com o arquivo padrão: $FILE"

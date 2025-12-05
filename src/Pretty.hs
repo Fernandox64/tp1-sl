@@ -12,11 +12,12 @@ indent :: Int -> String
 indent n = replicate (2 * n) ' '
 
 ppType :: Type -> String
-ppType TIntType    = "int"
-ppType TFloatType  = "float"
-ppType TStringType = "string"
-ppType TBoolType   = "bool"
-ppType TVoidType   = "void"
+ppType TIntType       = "int"
+ppType TFloatType     = "float"
+ppType TStringType    = "string"
+ppType TBoolType      = "bool"
+ppType TVoidType      = "void"
+ppType (TArray ty)    = ppType ty ++ "[]"
 
 ppExpr :: Expr -> String
 ppExpr (EVar x)       = x
@@ -45,6 +46,17 @@ ppExpr (EAnd e1 e2) = "(" ++ ppExpr e1 ++ " && " ++ ppExpr e2 ++ ")"
 ppExpr (EOr  e1 e2) = "(" ++ ppExpr e1 ++ " || " ++ ppExpr e2 ++ ")"
 ppExpr (ENot e)     = "(!" ++ ppExpr e ++ ")"
 
+-- arrays
+ppExpr (EIndex arr ix) =
+  ppExpr arr ++ "[" ++ ppExpr ix ++ "]"
+
+ppExpr (EArrayLit es) =
+  "[" ++ intercalate ", " (map ppExpr es) ++ "]"
+
+ppExpr (ENewArray ty e) =
+  "new " ++ ppType ty ++ "[" ++ ppExpr e ++ "]"
+
+-- function calls
 ppExpr (ECall f args) =
   f ++ "(" ++ intercalate ", " (map ppExpr args) ++ ")"
 
@@ -82,9 +94,6 @@ ppStmt n (SWhile cond body) =
   ++ unlines (map (ppStmt (n + 1)) body)
   ++ indent n ++ "}"
 
-ppStmt n (SAssign name expr) =
-  indent n ++ name ++ " = " ++ ppExpr expr ++ ";"
-
 ppStmt n (SFor mInit mCond mStep body) =
   indent n ++ "for (" ++ ppForInit mInit ++ "; "
                    ++ ppForCond mCond ++ "; "
@@ -92,8 +101,15 @@ ppStmt n (SFor mInit mCond mStep body) =
   ++ unlines (map (ppStmt (n + 1)) body)
   ++ indent n ++ "}"
 
+ppStmt n (SAssign name expr) =
+  indent n ++ name ++ " = " ++ ppExpr expr ++ ";"
+
+ppStmt n (SAssignIndex name idx expr) =
+  indent n ++ name ++ "[" ++ ppExpr idx ++ "] = " ++ ppExpr expr ++ ";"
+
 ppStmt n (SExpr e) =
   indent n ++ ppExpr e ++ ";"
+
 
 ppField :: Int -> (String, Type) -> String
 ppField n (fname, fty) =

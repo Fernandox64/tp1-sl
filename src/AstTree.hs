@@ -37,9 +37,6 @@ stmtToTree (SWhile cond body) =
     , Node "Body" (map stmtToTree body)
     ]
 
-stmtToTree (SAssign name expr) =
-  Node ("Assign " ++ name) [exprToTree expr]
-
 stmtToTree (SFor mInit mCond mStep body) =
   Node "For"
     [ Node "Init" (maybe [] (\fi -> [forInitToTree fi]) mInit)
@@ -47,6 +44,15 @@ stmtToTree (SFor mInit mCond mStep body) =
     , Node "Step" (maybe [] (\fs -> [forStepToTree fs]) mStep)
     , Node "Body" (map stmtToTree body)
     ]
+
+stmtToTree (SAssign name expr) =
+  Node ("Assign " ++ name) [exprToTree expr]
+
+stmtToTree (SAssignIndex name idx expr) =
+  Node ("AssignIndex " ++ name)
+       [ exprToTree idx
+       , exprToTree expr
+       ]
 
 stmtToTree (SExpr e) =
   Node "Expr" [exprToTree e]
@@ -92,12 +98,22 @@ exprToTree (EAnd e1 e2)  = Node "And" [exprToTree e1, exprToTree e2]
 exprToTree (EOr  e1 e2)  = Node "Or"  [exprToTree e1, exprToTree e2]
 exprToTree (ENot e)      = Node "Not" [exprToTree e]
 
+exprToTree (EIndex arr ix) =
+  Node "Index" [exprToTree arr, exprToTree ix]
+
+exprToTree (EArrayLit es) =
+  Node "ArrayLit" (map exprToTree es)
+
+exprToTree (ENewArray ty e) =
+  Node ("NewArray " ++ showType ty) [exprToTree e]
+
 exprToTree (ECall f args) =
   Node ("Call " ++ f) (map exprToTree args)
 
 showType :: Type -> String
-showType TIntType    = "int"
-showType TFloatType  = "float"
-showType TStringType = "string"
-showType TBoolType   = "bool"
-showType TVoidType   = "void"
+showType TIntType       = "int"
+showType TFloatType     = "float"
+showType TStringType    = "string"
+showType TBoolType      = "bool"
+showType TVoidType      = "void"
+showType (TArray t)     = showType t ++ "[]"
