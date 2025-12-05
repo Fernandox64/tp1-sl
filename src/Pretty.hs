@@ -18,6 +18,7 @@ ppType TStringType    = "string"
 ppType TBoolType      = "bool"
 ppType TVoidType      = "void"
 ppType (TArray ty)    = ppType ty ++ "[]"
+ppType (TCustom name) = name
 
 ppExpr :: Expr -> String
 ppExpr (EVar x)       = x
@@ -56,7 +57,14 @@ ppExpr (EArrayLit es) =
 ppExpr (ENewArray ty e) =
   "new " ++ ppType ty ++ "[" ++ ppExpr e ++ "]"
 
--- function calls
+-- campos / struct
+ppExpr (EField e fld) =
+  ppExpr e ++ "." ++ fld
+
+ppExpr (EStructLit name es) =
+  name ++ "{" ++ intercalate ", " (map ppExpr es) ++ "}"
+
+-- chamadas de função
 ppExpr (ECall f args) =
   f ++ "(" ++ intercalate ", " (map ppExpr args) ++ ")"
 
@@ -109,7 +117,6 @@ ppStmt n (SAssignIndex name idx expr) =
 
 ppStmt n (SExpr e) =
   indent n ++ ppExpr e ++ ";"
-
 
 ppField :: Int -> (String, Type) -> String
 ppField n (fname, fty) =

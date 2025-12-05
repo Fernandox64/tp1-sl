@@ -107,6 +107,12 @@ exprToTree (EArrayLit es) =
 exprToTree (ENewArray ty e) =
   Node ("NewArray " ++ showType ty) [exprToTree e]
 
+exprToTree (EField e fld) =
+  Node ("FieldAccess ." ++ fld) [exprToTree e]
+
+exprToTree (EStructLit name es) =
+  Node ("StructLit " ++ name) (map exprToTree es)
+
 exprToTree (ECall f args) =
   Node ("Call " ++ f) (map exprToTree args)
 
@@ -117,3 +123,4 @@ showType TStringType    = "string"
 showType TBoolType      = "bool"
 showType TVoidType      = "void"
 showType (TArray t)     = showType t ++ "[]"
+showType (TCustom name) = name

@@ -148,7 +148,6 @@ Stmt
   | ident assign Expr semicolon   { SAssign $1 $3 }
   | Expr semicolon                { SExpr $1 }
 
-
 ForInitOpt :: { Maybe ForInit }
 ForInitOpt
   :                               { Nothing }
@@ -194,8 +193,9 @@ BaseType
   | string_kw                     { TStringType }
   | bool_kw                       { TBoolType }
   | void_kw                       { TVoidType }
+  | ident                         { TCustom $1 }
 
--- Expressions (with postfix array index)
+-- Expressions (with postfix array index / campo)
 Expr :: { Expr }
 Expr
   : Expr orop Expr                { EOr  $1 $3 }
@@ -218,12 +218,14 @@ Postfix
   : Primary                       { $1 }
   | Postfix lbracket Expr rbracket
                                   { EIndex $1 $3 }
-  -- futuro: Postfix dot ident para acesso a campos/size
+  | Postfix dot ident             { EField $1 $3 }
 
 Primary :: { Expr }
 Primary
   : ident lparen ArgListOpt rparen
                                   { ECall $1 $3 }
+  | ident lbrace ArgListOpt rbrace
+                                  { EStructLit $1 $3 }
   | ident                         { EVar $1 }
   | int_lit                       { EInt $1 }
   | float_lit                     { EFloat $1 }
@@ -234,7 +236,6 @@ Primary
                                   { ENewArray $2 $4 }
   | lbracket ArgListOpt rbracket  { EArrayLit $2 }
   | lparen Expr rparen            { $2 }
-
 
 ArgListOpt :: { [Expr] }
 ArgListOpt

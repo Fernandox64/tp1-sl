@@ -7,7 +7,8 @@ data Type
   | TStringType
   | TBoolType
   | TVoidType
-  | TArray Type          -- int[], float[], etc.
+  | TArray Type          -- int[], float[], Person[]
+  | TCustom String       -- tipos definidos pelo usuário, ex.: Person
   deriving (Eq, Show)
 
 -- Expressions
@@ -37,7 +38,10 @@ data Expr
   | EIndex Expr Expr        -- v[i]
   | EArrayLit [Expr]        -- [1,2,3]
   | ENewArray Type Expr     -- new int[size]
-  -- function call
+  -- struct / campos
+  | EField Expr String      -- expr.campo (inclui v.size)
+  | EStructLit String [Expr]-- Person{ "Alice", 25, 1.70 }
+  -- chamadas de função
   | ECall String [Expr]
   deriving (Eq, Show)
 
@@ -64,7 +68,6 @@ data Stmt
   | SAssignIndex String Expr Expr   -- result[i] = expr;
   | SExpr Expr
   deriving (Eq, Show)
-
 
 -- Program
 newtype Program = Program [Stmt]
