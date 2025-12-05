@@ -10,10 +10,10 @@ $alnum = [A-Za-z0-9_]
 
 tokens :-
 
-  -- whitespace
+  -- espaços em branco
   $white+                         ;
 
-  -- keywords
+  -- palavras-chave
   "struct"                        { \_ -> TStruct }
   "let"                           { \_ -> TLet }
   "func"                          { \_ -> TFunc }
@@ -21,71 +21,78 @@ tokens :-
   "if"                            { \_ -> TIf }
   "else"                          { \_ -> TElse }
   "while"                         { \_ -> TWhile }
+  "for"                           { \_ -> TFor }
   "true"                          { \_ -> TTrue }
   "false"                         { \_ -> TFalse }
+  "new"                           { \_ -> TNew }
 
-  -- type keywords
+  -- palavras-chave de tipo
   "int"                           { \_ -> TIntKw }
   "float"                         { \_ -> TFloatKw }
   "string"                        { \_ -> TStringKw }
   "bool"                          { \_ -> TBoolKw }
   "void"                          { \_ -> TVoidKw }
 
-  -- logical operators
+  -- operadores lógicos
   "&&"                            { \_ -> TAnd }
   "||"                            { \_ -> TOr }
   "!"                             { \_ -> TNot }
 
-  -- relational operators (multi-char first)
+  -- operadores relacionais (multicaractere primeiro)
   "=="                            { \_ -> TEqual }
   "!="                            { \_ -> TNotEqual }
   "<="                            { \_ -> TLessEq }
   ">="                            { \_ -> TGreaterEq }
-
   "<"                             { \_ -> TLess }
   ">"                             { \_ -> TGreater }
 
-  -- punctuation
+  -- pontuação
   ":"                             { \_ -> TColon }
   ";"                             { \_ -> TSemicolon }
   "{"                             { \_ -> TLBrace }
   "}"                             { \_ -> TRBrace }
   "("                             { \_ -> TLParen }
   ")"                             { \_ -> TRParen }
+  "["                             { \_ -> TLBracket }
+  "]"                             { \_ -> TRBracket }
+  "."                             { \_ -> TDot }
   ","                             { \_ -> TComma }
   "="                             { \_ -> TAssign }
 
-  -- arithmetic operators
+  -- operadores aritméticos
   "+"                             { \_ -> TPlus }
   "-"                             { \_ -> TMinus }
   "*"                             { \_ -> TTimes }
   "/"                             { \_ -> TDiv }
 
-  -- float literal: 123.45
+  -- literal float: 123.45
   $digit+ \. $digit+              { \s -> TFloatLit (read s) }
 
-  -- integer literal: 123
+  -- literal int: 123
   $digit+                         { \s -> TIntLit (read s) }
 
-  -- string literal: "qualquer coisa sem aspas internas"
+  -- literal string: "qualquer coisa sem aspas internas"
   \" [^\"]* \"                    { \s -> TStringLit (stripQuotes s) }
 
-  -- identifiers
+  -- identificadores
   $alpha $alnum*                  { \s -> TIdent s }
 
-  -- any other unexpected character
+  -- qualquer outro caractere inesperado
   .                               { \s -> TUnknown s }
 
 {
 data Token
   = TStruct | TLet | TFunc | TReturn
-  | TIf | TElse | TWhile
+  | TIf | TElse | TWhile | TFor
   | TTrue | TFalse
   | TIntKw | TFloatKw | TStringKw | TBoolKw | TVoidKw
-  | TColon | TSemicolon | TLBrace | TRBrace | TLParen | TRParen | TComma | TAssign
+  | TColon | TSemicolon | TLBrace | TRBrace | TLParen | TRParen
+  | TLBracket | TRBracket | TDot
+  | TComma | TAssign
   | TPlus | TMinus | TTimes | TDiv
   | TLess | TLessEq | TGreater | TGreaterEq | TEqual | TNotEqual
   | TAnd | TOr | TNot
+  | TNew                    -- <<< ADICIONE ESTA LINHA >>>
   | TIntLit Int
   | TFloatLit Double
   | TStringLit String
@@ -93,6 +100,7 @@ data Token
   | TUnknown String
   | TEOF
   deriving (Eq, Show)
+
 
 stripQuotes :: String -> String
 stripQuotes s =

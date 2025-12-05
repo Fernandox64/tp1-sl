@@ -17,6 +17,7 @@ import Lexer
   if_kw      { TIf }
   else_kw    { TElse }
   while_kw   { TWhile }
+  for_kw     { TFor }
 
   int_kw     { TIntKw }
   float_kw   { TFloatKw }
@@ -135,8 +136,31 @@ Stmt
                                   { SIf $3 $5 $6 }
   | while_kw lparen Expr rparen Block
                                   { SWhile $3 $5 }
+  | for_kw lparen ForInitOpt semicolon ForCondOpt semicolon ForStepOpt rparen Block
+                                  { SFor $3 $5 $7 $9 }
   | ident assign Expr semicolon   { SAssign $1 $3 }
   | Expr semicolon                { SExpr $1 }
+
+ForInitOpt :: { Maybe ForInit }
+ForInitOpt
+  :                               { Nothing }
+  | ForInit                       { Just $1 }
+
+ForInit :: { ForInit }
+ForInit
+  : let ident colon Type assign Expr
+                                  { FInitLet $2 $4 $6 }
+  | ident assign Expr             { FInitAssign $1 $3 }
+
+ForCondOpt :: { Maybe Expr }
+ForCondOpt
+  :                               { Nothing }
+  | Expr                          { Just $1 }
+
+ForStepOpt :: { Maybe ForStep }
+ForStepOpt
+  :                               { Nothing }
+  | ident assign Expr             { Just (FStepAssign $1 $3) }
 
 ElsePart :: { [Stmt] }
 ElsePart
@@ -157,27 +181,19 @@ Type
 
 Expr :: { Expr }
 Expr
-  -- logical
   : Expr orop Expr                { EOr  $1 $3 }
   | Expr andop Expr               { EAnd $1 $3 }
-
-  -- relational
   | Expr less Expr                { ELt  $1 $3 }
   | Expr lesseq Expr              { ELe  $1 $3 }
   | Expr greater Expr             { EGt  $1 $3 }
   | Expr greatereq Expr           { EGe  $1 $3 }
   | Expr eq Expr                  { EEq  $1 $3 }
   | Expr noteq Expr               { ENe  $1 $3 }
-
-  -- arithmetic
   | Expr plus Expr                { EAdd $1 $3 }
   | Expr minus Expr               { ESub $1 $3 }
   | Expr times Expr               { EMul $1 $3 }
   | Expr div Expr                 { EDiv $1 $3 }
-
-  -- unary not
   | notop Expr                    { ENot $2 }
-
   | Primary                       { $1 }
 
 Primary :: { Expr }

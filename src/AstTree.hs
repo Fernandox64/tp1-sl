@@ -40,6 +40,14 @@ stmtToTree (SWhile cond body) =
 stmtToTree (SAssign name expr) =
   Node ("Assign " ++ name) [exprToTree expr]
 
+stmtToTree (SFor mInit mCond mStep body) =
+  Node "For"
+    [ Node "Init" (maybe [] (\fi -> [forInitToTree fi]) mInit)
+    , Node "Cond" (maybe [] (\e  -> [exprToTree e])     mCond)
+    , Node "Step" (maybe [] (\fs -> [forStepToTree fs]) mStep)
+    , Node "Body" (map stmtToTree body)
+    ]
+
 stmtToTree (SExpr e) =
   Node "Expr" [exprToTree e]
 
@@ -50,6 +58,16 @@ fieldToTree (fname, fty) =
 paramToTree :: (String, Type) -> Tree String
 paramToTree (pname, pty) =
   Node ("Param " ++ pname ++ " : " ++ showType pty) []
+
+forInitToTree :: ForInit -> Tree String
+forInitToTree (FInitLet name ty expr) =
+  Node ("ForInitLet " ++ name ++ " : " ++ showType ty) [exprToTree expr]
+forInitToTree (FInitAssign name expr) =
+  Node ("ForInitAssign " ++ name) [exprToTree expr]
+
+forStepToTree :: ForStep -> Tree String
+forStepToTree (FStepAssign name expr) =
+  Node ("ForStepAssign " ++ name) [exprToTree expr]
 
 exprToTree :: Expr -> Tree String
 exprToTree (EVar x)      = Node ("Var " ++ x) []
@@ -76,7 +94,6 @@ exprToTree (ENot e)      = Node "Not" [exprToTree e]
 
 exprToTree (ECall f args) =
   Node ("Call " ++ f) (map exprToTree args)
-
 
 showType :: Type -> String
 showType TIntType    = "int"

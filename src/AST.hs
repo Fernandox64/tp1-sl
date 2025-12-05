@@ -36,6 +36,15 @@ data Expr
   | ECall String [Expr]
   deriving (Eq, Show)
 
+-- For-loop helpers
+data ForInit
+  = FInitLet String Type Expr     -- let i : int = 0
+  | FInitAssign String Expr       -- i = 0
+  deriving (Eq, Show)
+
+data ForStep
+  = FStepAssign String Expr       -- i = i + 1
+  deriving (Eq, Show)
 
 -- Statements
 data Stmt
@@ -44,10 +53,12 @@ data Stmt
   | SFunc String [(String, Type)] Type [Stmt]
   | SReturn Expr
   | SIf Expr [Stmt] [Stmt]
-  | SWhile Expr [Stmt]          -- novo: while (expr) { body }
-  | SAssign String Expr         -- novo: x = expr;
-  | SExpr Expr                  -- expressão como comando
+  | SWhile Expr [Stmt]
+  | SAssign String Expr
+  | SFor (Maybe ForInit) (Maybe Expr) (Maybe ForStep) [Stmt]
+  | SExpr Expr
   deriving (Eq, Show)
 
+-- Program
 newtype Program = Program [Stmt]
   deriving (Eq, Show)
