@@ -1,35 +1,38 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-echo "==> cabal clean"
+# Script de testes para o compilador slc.
+# Uso:
+#   ./scripts/test.sh                # testa com examples/test_func.sl
+#   ./scripts/test.sh outro.arquivo # testa com outro arquivo .sl
+
+FILE=${1:-examples/test_func.sl}
+
+echo "==> Limpando build anterior (cabal clean)"
 cabal clean
+
+echo "==> Compilando o projeto (cabal build)"
 cabal build
 
-#echo "a a b c" | cabal run slc --
+echo
+echo "==> Teste 1: análise léxica (--lexer)"
+echo "    comando: cabal run slc -- --lexer \"$FILE\""
+cabal run slc -- --lexer "$FILE"
 
-#echo "==> cabal run slc -- examples/test_idents.sl
-#cabal run slc -- examples/test_idents.sl
+echo
+echo "==> Teste 2: análise sintática / AST (--parser)"
+echo "    comando: cabal run slc -- --parser \"$FILE\""
+cabal run slc -- --parser "$FILE"
 
-echo "==> cabal run slc -- examples/test_func.sl
-cabal run slc -- examples/test_func.sl
+echo
+echo "==> Teste 3: pretty-print (--pretty)"
+echo "    comando: cabal run slc -- --pretty \"$FILE\""
+cabal run slc -- --pretty "$FILE"
 
+echo
+echo "==> Teste 4: modo padrão (equivalente a --pretty)"
+echo "    comando: cabal run slc -- \"$FILE\""
+cabal run slc -- "$FILE"
 
-
-#echo "==> cabal run slc -- examples/test_expr.sl
-#cabal run slc -- examples/test_expr.sl
-
-
-#echo "==> cabal run slc -- examples/test_struct.sl
-#cabal run slc -- examples/test_struct.sl
-
-
-#echo "==> cabal run slc -- examples/test_let.sl
-#cabal run slc -- examples/test_let.sl
-
-
-
-#echo "==> cabal run slc -- examples/test_lexer_min.sl
-#cabal run slc -- examples/test_lexer_min.sl
-
-#echo "==> cabal run slc -- examples/test1.sl
-#cabal run slc -- examples/test1.sl
+echo
+echo "==> Todos os testes foram executados com o arquivo: $FILE"
