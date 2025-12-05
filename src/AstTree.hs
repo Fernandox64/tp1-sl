@@ -5,7 +5,7 @@ module AstTree
 import AST
 import Data.Tree (Tree(..))
 
--- Programa -> Tree
+-- Program -> Tree
 progToTree :: Program -> Tree String
 progToTree (Program stmts) =
   Node "Program" (map stmtToTree stmts)
@@ -25,6 +25,16 @@ stmtToTree (SFunc name params retTy body) =
 stmtToTree (SReturn e) =
   Node "Return" [exprToTree e]
 
+stmtToTree (SIf cond th el) =
+  Node "If"
+    [ Node "Cond" [exprToTree cond]
+    , Node "Then" (map stmtToTree th)
+    , Node "Else" (map stmtToTree el)
+    ]
+
+stmtToTree (SExpr e) =
+  Node "Expr" [exprToTree e]
+
 fieldToTree :: (String, Type) -> Tree String
 fieldToTree (fname, fty) =
   Node ("Field " ++ fname ++ " : " ++ showType fty) []
@@ -38,6 +48,7 @@ exprToTree (EVar x) =
   Node ("Var " ++ x) []
 exprToTree (EInt n) =
   Node ("Int " ++ show n) []
+
 exprToTree (EAdd e1 e2) =
   Node "Add" [exprToTree e1, exprToTree e2]
 exprToTree (ESub e1 e2) =
@@ -46,6 +57,22 @@ exprToTree (EMul e1 e2) =
   Node "Mul" [exprToTree e1, exprToTree e2]
 exprToTree (EDiv e1 e2) =
   Node "Div" [exprToTree e1, exprToTree e2]
+
+exprToTree (ELt e1 e2) =
+  Node "Lt" [exprToTree e1, exprToTree e2]
+exprToTree (ELe e1 e2) =
+  Node "Le" [exprToTree e1, exprToTree e2]
+exprToTree (EGt e1 e2) =
+  Node "Gt" [exprToTree e1, exprToTree e2]
+exprToTree (EGe e1 e2) =
+  Node "Ge" [exprToTree e1, exprToTree e2]
+exprToTree (EEq e1 e2) =
+  Node "Eq" [exprToTree e1, exprToTree e2]
+exprToTree (ENe e1 e2) =
+  Node "Ne" [exprToTree e1, exprToTree e2]
+
+exprToTree (ECall f args) =
+  Node ("Call " ++ f) (map exprToTree args)
 
 showType :: Type -> String
 showType TIntType    = "int"

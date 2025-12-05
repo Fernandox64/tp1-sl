@@ -1,8 +1,8 @@
 {
 module Parser where
 
-import Lexer
 import AST
+import Lexer
 }
 
 %name parseProgram Program
@@ -10,34 +10,46 @@ import AST
 %error { parseError }
 
 %token
-  struct    { TStruct }
-  let       { TLet }
-  func      { TFunc }
-  return    { TReturn }
+  struct     { TStruct }
+  let        { TLet }
+  func       { TFunc }
+  return     { TReturn }
+  if_kw      { TIf }
+  else_kw    { TElse }
 
-  int_kw    { TIntKw }
-  float_kw  { TFloatKw }
-  string_kw { TStringKw }
-  bool_kw   { TBoolKw }
-  void_kw   { TVoidKw }
+  int_kw     { TIntKw }
+  float_kw   { TFloatKw }
+  string_kw  { TStringKw }
+  bool_kw    { TBoolKw }
+  void_kw    { TVoidKw }
 
-  colon     { TColon }
-  semicolon { TSemicolon }
-  lbrace    { TLBrace }
-  rbrace    { TRBrace }
-  lparen    { TLParen }
-  rparen    { TRParen }
-  comma     { TComma }
-  assign    { TAssign }
-  plus      { TPlus }
-  minus     { TMinus }
-  times     { TTimes }
-  div       { TDiv }
+  colon      { TColon }
+  semicolon  { TSemicolon }
+  lbrace     { TLBrace }
+  rbrace     { TRBrace }
+  lparen     { TLParen }
+  rparen     { TRParen }
+  comma      { TComma }
+  assign     { TAssign }
 
-  ident     { TIdent $$ }
-  intlit    { TIntLit $$ }
-  eof       { TEOF }
+  plus       { TPlus }
+  minus      { TMinus }
+  times      { TTimes }
+  div        { TDiv }
 
+  less       { TLess }
+  lesseq     { TLessEq }
+  greater    { TGreater }
+  greatereq  { TGreaterEq }
+  eq         { TEqual }
+  noteq      { TNotEqual }
+
+  ident      { TIdent $$ }
+  int_lit    { TIntLit $$ }
+
+  eof        { TEOF }
+
+%nonassoc less lesseq greater greatereq eq noteq
 %left plus minus
 %left times div
 
@@ -58,26 +70,34 @@ TopLevel
   | StructDecl                    { $1 }
   | FuncDef                       { $1 }
 
--- Top-level let
+-- top-level let
 LetDecl :: { Stmt }
 LetDecl
   : let ident colon Type assign Expr semicolon
-                                   { SLet $2 $4 $6 }
+                                  { SLet $2 $4 $6 }
 
--- Top-level struct
 StructDecl :: { Stmt }
 StructDecl
   : struct ident lbrace FieldDecls rbrace
-                                   { SStruct $2 $4 }
+                                  { SStruct $2 $4 }
 
--- Top-level function: func name(params) : type { body }
+FieldDecls :: { [(String, Type)] }
+FieldDecls
+  :                               { [] }
+  | FieldDecl FieldDecls          { $1 : $2 }
+
+FieldDecl :: { (String, Type) }
+FieldDecl
+  : ident colon Type semicolon    { ($1, $3) }
+
 FuncDef :: { Stmt }
 FuncDef
-  : func ident lparen Params rparen colon Type lbrace FunStmtList rbrace
-                                   { SFunc $2 $4 $7 $9 }
+  : func ident lparen ParamListOpt rparen colon Type
+    lbrace StmtList rbrace
+                                  { SFunc $2 $4 $7 $9 }
 
-Params :: { [(String, Type)] }
-Params
+ParamListOpt :: { [(String, Type)] }
+ParamListOpt
   :                               { [] }
   | ParamList                     { $1 }
 
@@ -90,17 +110,29 @@ Param :: { (String, Type) }
 Param
   : ident colon Type              { ($1, $3) }
 
--- Statements inside function bodies
-FunStmtList :: { [Stmt] }
-FunStmtList
+StmtList :: { [Stmt] }
+StmtList
   :                               { [] }
-  | FunStmt FunStmtList           { $1 : $2 }
+  | Stmt StmtList                 { $1 : $2 }
 
-FunStmt :: { Stmt }
-FunStmt
+Stmt :: { Stmt }
+Stmt
+  -- local let
   : let ident colon Type assign Expr semicolon
-                                   { SLet $2 $4 $6 }
+                                  { SLet $2 $4 $6 }
   | return Expr semicolon         { SReturn $2 }
+  | if_kw lparen Expr rparen Block ElsePart
+                                  { SIf $3 $5 $6 }
+  | Expr semicolon                { SExpr $1 }
+
+ElsePart :: { [Stmt] }
+ElsePart
+  :                               { [] }          -- optional else
+  | else_kw Block                 { $2 }
+
+Block :: { [Stmt] }
+Block
+  : lbrace StmtList rbrace        { $2 }
 
 Type :: { Type }
 Type
@@ -110,33 +142,39 @@ Type
   | bool_kw                       { TBoolType }
   | void_kw                       { TVoidType }
 
--- Expressions with precedence
 Expr :: { Expr }
 Expr
-  : Expr plus Term                { EAdd $1 $3 }
-  | Expr minus Term               { ESub $1 $3 }
-  | Term                          { $1 }
+  -- relational
+  : Expr less Expr                { ELt  $1 $3 }
+  | Expr lesseq Expr              { ELe  $1 $3 }
+  | Expr greater Expr             { EGt  $1 $3 }
+  | Expr greatereq Expr           { EGe  $1 $3 }
+  | Expr eq Expr                  { EEq  $1 $3 }
+  | Expr noteq Expr               { ENe  $1 $3 }
+  -- arithmetic
+  | Expr plus Expr                { EAdd $1 $3 }
+  | Expr minus Expr               { ESub $1 $3 }
+  | Expr times Expr               { EMul $1 $3 }
+  | Expr div Expr                 { EDiv $1 $3 }
+  | Primary                       { $1 }
 
-Term :: { Expr }
-Term
-  : Term times Factor             { EMul $1 $3 }
-  | Term div Factor               { EDiv $1 $3 }
-  | Factor                        { $1 }
-
-Factor :: { Expr }
-Factor
-  : ident                         { EVar $1 }
-  | intlit                        { EInt $1 }
+Primary :: { Expr }
+Primary
+  : ident lparen ArgListOpt rparen
+                                  { ECall $1 $3 }
+  | ident                         { EVar $1 }
+  | int_lit                       { EInt $1 }
   | lparen Expr rparen            { $2 }
 
-FieldDecls :: { [(String, Type)] }
-FieldDecls
+ArgListOpt :: { [Expr] }
+ArgListOpt
   :                               { [] }
-  | FieldDecl FieldDecls          { $1 : $2 }
+  | ArgList                       { $1 }
 
-FieldDecl :: { (String, Type) }
-FieldDecl
-  : ident colon Type semicolon    { ($1, $3) }
+ArgList :: { [Expr] }
+ArgList
+  : Expr                          { [$1] }
+  | Expr comma ArgList            { $1 : $3 }
 
 {
 parseError :: [Token] -> a

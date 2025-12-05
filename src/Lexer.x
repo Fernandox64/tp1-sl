@@ -10,49 +10,68 @@ $alnum = [A-Za-z0-9_]
 
 tokens :-
 
-  -- pula qualquer whitespace (espaço, tab, \n, \r, etc.)
-  $white+               ;
+  -- skip whitespace
+  $white+                         ;
 
-  -- palavras-chave
-  "struct"              { \_ -> TStruct }
-  "let"                 { \_ -> TLet }
-  "func"                { \_ -> TFunc }
-  "return"              { \_ -> TReturn }
+  -- keywords
+  "struct"                        { \_ -> TStruct }
+  "let"                           { \_ -> TLet }
+  "func"                          { \_ -> TFunc }
+  "return"                        { \_ -> TReturn }
+  "if"                            { \_ -> TIf }
+  "else"                          { \_ -> TElse }
 
-  "int"                 { \_ -> TIntKw }
-  "float"               { \_ -> TFloatKw }
-  "string"              { \_ -> TStringKw }
-  "bool"                { \_ -> TBoolKw }
-  "void"                { \_ -> TVoidKw }
+  -- types
+  "int"                           { \_ -> TIntKw }
+  "float"                         { \_ -> TFloatKw }
+  "string"                        { \_ -> TStringKw }
+  "bool"                          { \_ -> TBoolKw }
+  "void"                          { \_ -> TVoidKw }
 
-  -- símbolos
-  ":"                   { \_ -> TColon }
-  ";"                   { \_ -> TSemicolon }
-  "{"                   { \_ -> TLBrace }
-  "}"                   { \_ -> TRBrace }
-  "("                   { \_ -> TLParen }
-  ")"                   { \_ -> TRParen }
-  ","                   { \_ -> TComma }
-  "="                   { \_ -> TAssign }
-  "+"                   { \_ -> TPlus }
-  "-"                   { \_ -> TMinus }
-  "*"                   { \_ -> TTimes }
-  "/"                   { \_ -> TDiv }
+  -- relational (multi-char first)
+  "=="                            { \_ -> TEqual }
+  "!="                            { \_ -> TNotEqual }
+  "<="                            { \_ -> TLessEq }
+  ">="                            { \_ -> TGreaterEq }
 
-  -- identificadores e inteiros
-  $alpha $alnum*        { \s -> TIdent s }
-  $digit+               { \s -> TIntLit (read s) }
+  "<"                             { \_ -> TLess }
+  ">"                             { \_ -> TGreater }
 
-  -- qualquer outro caractere ASCII vira TUnknown, nunca "lexical error"
-  [\x00-\x7F]           { \s -> TUnknown s }
+  -- punctuation
+  ":"                             { \_ -> TColon }
+  ";"                             { \_ -> TSemicolon }
+  "{"                             { \_ -> TLBrace }
+  "}"                             { \_ -> TRBrace }
+  "("                             { \_ -> TLParen }
+  ")"                             { \_ -> TRParen }
+  ","                             { \_ -> TComma }
+  "="                             { \_ -> TAssign }
+
+  -- arithmetic operators
+  "+"                             { \_ -> TPlus }
+  "-"                             { \_ -> TMinus }
+  "*"                             { \_ -> TTimes }
+  "/"                             { \_ -> TDiv }
+
+  -- integer literals
+  $digit+                         { \s -> TIntLit (read s) }
+
+  -- identifiers
+  $alpha $alnum*                  { \s -> TIdent s }
+
+  -- any other (unexpected) character
+  .                               { \s -> TUnknown s }
 
 {
 data Token
   = TStruct | TLet | TFunc | TReturn
+  | TIf | TElse
   | TIntKw | TFloatKw | TStringKw | TBoolKw | TVoidKw
   | TColon | TSemicolon | TLBrace | TRBrace | TLParen | TRParen | TComma | TAssign
   | TPlus | TMinus | TTimes | TDiv
-  | TIdent String | TIntLit Int
+  | TLess | TLessEq | TGreater | TGreaterEq | TEqual | TNotEqual
+  | TIdent String
+  | TIntLit Int
   | TUnknown String
   | TEOF
   deriving (Eq, Show)
