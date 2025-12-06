@@ -1151,5 +1151,28 @@ stripQuotes s =
     ('"':rest) -> reverse (drop 1 (reverse rest))
     _          -> s
 
+-- Remove comentários de linha (// ...) e de bloco (/* ... */)
+stripComments :: String -> String
+stripComments = stripLine . stripBlock
+  where
+    -- comentários de linha: // até o fim da linha
+    stripLine [] = []
+    stripLine ('/':'/':xs) = ' ' : ' ' : go xs
+      where
+        go []         = []
+        go ('\n':ys)  = '\n' : stripLine ys
+        go (_:ys)     = ' '  : go ys
+    stripLine (x:xs) = x : stripLine xs
+
+    -- comentários de bloco: /* ... */
+    stripBlock [] = []
+    stripBlock ('/':'*':xs) = ' ' : ' ' : go xs
+      where
+        go []            = []              -- caso extremo: EOF sem fechar
+        go ('*':'/':ys)  = ' ' : ' ' : stripBlock ys
+        go ('\n':ys)     = '\n' : go ys
+        go (_:ys)        = ' '  : go ys
+    stripBlock (x:xs) = x : stripBlock xs
+
 scanTokens :: String -> [Token]
-scanTokens s = alexScanTokens s ++ [TEOF]
+scanTokens s = alexScanTokens (stripComments s) ++ [TEOF]
